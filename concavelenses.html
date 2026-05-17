@@ -1,0 +1,334 @@
+Sure — here is the **entire complete code** with a **proper concave lens** and a **draggable green object arrow**.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Concave Lens Ray Diagram Applet</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  color: #173b6d;
+}
+
+.panel {
+  background: white;
+  max-width: 950px;
+  margin: auto;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+canvas {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-top: 15px;
+  cursor: grab;
+}
+
+.info {
+  margin-top: 12px;
+  font-size: 16px;
+  color: #333;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+  <h1>Concave Lens Ray Diagram Applet</h1>
+  <p>Drag the green object arrow left or right.</p>
+
+  <canvas id="canvas" width="900" height="500"></canvas>
+
+  <div class="info" id="info"></div>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const info = document.getElementById("info");
+
+const W = canvas.width;
+const H = canvas.height;
+
+const lensX = W / 2;
+const axisY = H / 2;
+
+const focalLength = 120;
+const objectHeight = 100;
+
+let objectDistance = 260;
+let dragging = false;
+
+canvas.addEventListener("mousedown", startDrag);
+canvas.addEventListener("mousemove", dragObject);
+canvas.addEventListener("mouseup", stopDrag);
+canvas.addEventListener("mouseleave", stopDrag);
+
+canvas.addEventListener("touchstart", startDragTouch);
+canvas.addEventListener("touchmove", dragObjectTouch);
+canvas.addEventListener("touchend", stopDrag);
+
+function getMousePos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+}
+
+function getTouchPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  return {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top
+  };
+}
+
+function startDrag(e) {
+  const pos = getMousePos(e);
+  checkDragStart(pos);
+}
+
+function startDragTouch(e) {
+  e.preventDefault();
+  const pos = getTouchPos(e);
+  checkDragStart(pos);
+}
+
+function checkDragStart(pos) {
+  const objectX = lensX - objectDistance;
+  const objectTopY = axisY - objectHeight;
+
+  if (
+    pos.x > objectX - 25 &&
+    pos.x < objectX + 25 &&
+    pos.y > objectTopY - 25 &&
+    pos.y < axisY + 20
+  ) {
+    dragging = true;
+    canvas.style.cursor = "grabbing";
+  }
+}
+
+function dragObject(e) {
+  if (!dragging) return;
+
+  const pos = getMousePos(e);
+  updateObjectPosition(pos.x);
+}
+
+function dragObjectTouch(e) {
+  if (!dragging) return;
+
+  e.preventDefault();
+  const pos = getTouchPos(e);
+  updateObjectPosition(pos.x);
+}
+
+function updateObjectPosition(x) {
+  objectDistance = lensX - x;
+
+  if (objectDistance < 60) objectDistance = 60;
+  if (objectDistance > 380) objectDistance = 380;
+
+  drawDiagram();
+}
+
+function stopDrag() {
+  dragging = false;
+  canvas.style.cursor = "grab";
+}
+
+function drawLine(x1, y1, x2, y2, color = "black", width = 2, dashed = false) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.setLineDash(dashed ? [8, 6] : []);
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawArrow(x1, y1, x2, y2, color = "black", width = 2, dashed = false) {
+  ctx.save();
+
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = width;
+  ctx.setLineDash(dashed ? [8, 6] : []);
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const headLength = 10;
+
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(
+    x2 - headLength * Math.cos(angle - Math.PI / 6),
+    y2 - headLength * Math.sin(angle - Math.PI / 6)
+  );
+  ctx.lineTo(
+    x2 - headLength * Math.cos(angle + Math.PI / 6),
+    y2 - headLength * Math.sin(angle + Math.PI / 6)
+  );
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawText(text, x, y, color = "black", size = 15) {
+  ctx.fillStyle = color;
+  ctx.font = size + "px Arial";
+  ctx.fillText(text, x, y);
+}
+
+function drawConcaveLens() {
+  ctx.save();
+
+  ctx.strokeStyle = "#173b6d";
+  ctx.lineWidth = 4;
+
+  // Left inward curve
+  ctx.beginPath();
+  ctx.moveTo(lensX - 40, 70);
+  ctx.quadraticCurveTo(lensX + 18, axisY, lensX - 40, H - 70);
+  ctx.stroke();
+
+  // Right inward curve
+  ctx.beginPath();
+  ctx.moveTo(lensX + 40, 70);
+  ctx.quadraticCurveTo(lensX - 18, axisY, lensX + 40, H - 70);
+  ctx.stroke();
+
+  // Top and bottom edges
+  drawLine(lensX - 40, 70, lensX + 40, 70, "#173b6d", 4);
+  drawLine(lensX - 40, H - 70, lensX + 40, H - 70, "#173b6d", 4);
+
+  drawText("Concave Lens", lensX - 50, 45, "#173b6d", 16);
+
+  ctx.restore();
+}
+
+function drawDiagram() {
+  ctx.clearRect(0, 0, W, H);
+
+  const objectX = lensX - objectDistance;
+  const objectTopY = axisY - objectHeight;
+
+  const F1 = lensX - focalLength;
+  const F2 = lensX + focalLength;
+
+  const twoF1 = lensX - 2 * focalLength;
+  const twoF2 = lensX + 2 * focalLength;
+
+  const imageDistance = (objectDistance * focalLength) / (objectDistance + focalLength);
+  const imageX = lensX - imageDistance;
+
+  const magnification = imageDistance / objectDistance;
+  const imageHeight = objectHeight * magnification;
+  const imageTopY = axisY - imageHeight;
+
+  // Principal axis
+  drawLine(30, axisY, W - 30, axisY, "#444", 2);
+  drawText("Principal Axis", W - 145, axisY - 10, "#444");
+
+  // Focal points
+  ctx.fillStyle = "red";
+
+  ctx.beginPath();
+  ctx.arc(F1, axisY, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(F2, axisY, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawText("F", F1 - 5, axisY + 25, "red");
+  drawText("F", F2 - 5, axisY + 25, "red");
+
+  drawText("2F", twoF1 - 10, axisY + 25, "red");
+  drawText("2F", twoF2 - 10, axisY + 25, "red");
+
+  // Lens
+  drawConcaveLens();
+
+  // Object arrow
+  drawArrow(objectX, axisY, objectX, objectTopY, "green", 5);
+  drawText("Drag Object", objectX - 38, objectTopY - 14, "green");
+
+  // Image arrow
+  drawArrow(imageX, axisY, imageX, imageTopY, "purple", 5);
+  drawText("Virtual Image", imageX - 45, imageTopY - 14, "purple");
+
+  // Ray 1: parallel to principal axis
+  drawArrow(objectX, objectTopY, lensX, objectTopY, "orange", 2);
+
+  // Refracted ray diverges away
+  const ray1EndX = W - 50;
+  const slope1 = (objectTopY - axisY) / (lensX - F1);
+  const ray1EndY = objectTopY + slope1 * (ray1EndX - lensX);
+
+  drawArrow(lensX, objectTopY, ray1EndX, ray1EndY, "orange", 2);
+
+  // Back extension of ray 1
+  drawLine(lensX, objectTopY, F1, axisY, "orange", 2, true);
+
+  // Ray 2: through optical centre
+  const ray2EndX = W - 50;
+  const slope2 = (axisY - objectTopY) / (lensX - objectX);
+  const ray2EndY = objectTopY + slope2 * (ray2EndX - objectX);
+
+  drawArrow(objectX, objectTopY, ray2EndX, ray2EndY, "blue", 2);
+
+  // Back extension of ray 2
+  drawLine(objectX, objectTopY, imageX, imageTopY, "blue", 2, true);
+
+  // Optical centre
+  ctx.fillStyle = "#173b6d";
+  ctx.beginPath();
+  ctx.arc(lensX, axisY, 4, 0, Math.PI * 2);
+  ctx.fill();
+  drawText("O", lensX + 8, axisY - 8, "#173b6d");
+
+  info.innerHTML = `
+    Object distance: <b>${objectDistance.toFixed(0)} px</b> |
+    Image distance: <b>${imageDistance.toFixed(1)} px</b> |
+    Magnification: <b>${magnification.toFixed(2)}</b>
+    <br>
+    For a concave lens, the image is always 
+    <b>virtual, upright, and diminished</b>.
+  `;
+}
+
+drawDiagram();
+</script>
+
+</body>
+</html>
+```

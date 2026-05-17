@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Converging Lens Ray Diagram Applet</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #0f172a;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: #64748b;
+      max-width: 800px;
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .controls {
+      padding: 24px;
+    }
+
+    .controls h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+    }
+
+    .field {
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      font-size: 15px;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .result-box {
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-top: 18px;
+    }
+
+    .observation {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 16px;
+      margin-top: 18px;
+    }
+
+    .observation h3 {
+      margin: 0 0 8px;
+    }
+
+    .observation p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .tip {
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button {
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1e293b;
+    }
+
+    .diagram-card {
+      padding: 0;
+    }
+
+    svg {
+      width: 100%;
+      height: 560px;
+      display: block;
+      background: white;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .note {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+    }
+
+    .note h3 {
+      margin: 0 0 8px;
+    }
+
+    .note p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .notes {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Converging Lens Ray Diagram Applet</h1>
+        <p class="subtitle">
+          Students can drag the object, adjust the focal length, and observe how the ray diagram and image change.
+        </p>
+      </div>
+      <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <h2>Student Controls</h2>
+
+        <div class="field">
+          <label>Object distance, u: <span id="objectDistanceLabel">18.0</span> cm</label>
+          <input id="objectDistanceRange" type="range" min="3" max="25" step="0.1" value="18" />
+        </div>
+
+        <div class="field">
+          <label>Object height: <span id="objectHeightLabel">6.0</span> cm</label>
+          <input id="objectHeightRange" type="range" min="2" max="9" step="0.1" value="6" />
+        </div>
+
+        <div class="field">
+          <label>Focal length, f: <span id="focalLengthLabel">8.0</span> cm</label>
+          <input id="focalLengthRange" type="range" min="4" max="12" step="0.1" value="8" />
+        </div>
+
+        <div class="input-grid">
+          <div>
+            <label>u / cm</label>
+            <input id="objectDistanceInput" type="number" min="3" max="25" step="0.1" value="18" />
+          </div>
+          <div>
+            <label>f / cm</label>
+            <input id="focalLengthInput" type="number" min="4" max="12" step="0.1" value="8" />
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div><strong>Lens formula:</strong> 1/f = 1/u + 1/v</div>
+          <div><strong>Image distance, v:</strong> <span id="imageDistanceText">---</span></div>
+          <div><strong>Magnification, m:</strong> <span id="magnificationText">---</span></div>
+          <div><strong>Image height:</strong> <span id="imageHeightText">---</span></div>
+        </div>
+
+        <div class="observation">
+          <h3>Observation</h3>
+          <p id="observationText">---</p>
+        </div>
+
+        <div class="tip">
+          Drag the black object arrow in the diagram to change the object distance.
+        </div>
+      </div>
+
+      <div class="card diagram-card">
+        <svg id="diagram" viewBox="0 0 980 560"></svg>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h3>Ray 1</h3>
+        <p>A ray parallel to the principal axis refracts through the far focal point.</p>
+      </div>
+      <div class="note">
+        <h3>Ray 2</h3>
+        <p>A ray through the optical centre continues almost straight without bending.</p>
+      </div>
+      <div class="note">
+        <h3>Ray 3</h3>
+        <p>A ray through the near focal point emerges parallel to the principal axis.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const svg = document.getElementById("diagram");
+
+    const width = 980;
+    const height = 560;
+    const cx = width / 2;
+    const cy = height / 2;
+    const scale = 18;
+
+    let objectDistance = 18;
+    let objectHeight = 6;
+    let focalLength = 8;
+    let dragging = false;
+
+    const objectDistanceRange = document.getElementById("objectDistanceRange");
+    const objectHeightRange = document.getElementById("objectHeightRange");
+    const focalLengthRange = document.getElementById("focalLengthRange");
+    const objectDistanceInput = document.getElementById("objectDistanceInput");
+    const focalLengthInput = document.getElementById("focalLengthInput");
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function svgElement(tag, attrs = {}) {
+      const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      for (const key in attrs) {
+        element.setAttribute(key, attrs[key]);
+      }
+      return element;
+    }
+
+    function add(tag, attrs = {}) {
+      const element = svgElement(tag, attrs);
+      svg.appendChild(element);
+      return element;
+    }
+
+    function addText(x, y, text, attrs = {}) {
+      const element = add("text", {
+        x,
+        y,
+        fill: attrs.fill || "#334155",
+        "font-size": attrs.size || 14,
+        "font-weight": attrs.weight || "normal",
+        "text-anchor": attrs.anchor || "start"
+      });
+      element.textContent = text;
+      return element;
+    }
+
+    function addLine(x1, y1, x2, y2, attrs = {}) {
+      return add("line", {
+        x1,
+        y1,
+        x2,
+        y2,
+        stroke: attrs.stroke || "#2563eb",
+        "stroke-width": attrs.width || 2.5,
+        "stroke-dasharray": attrs.dash || "",
+        "marker-end": attrs.arrow ? "url(#arrowBlue)" : ""
+      });
+    }
+
+    function addArrow(x1, y1, x2, y2, color = "#2563eb", dash = "") {
+      return add("line", {
+        x1,
+        y1,
+        x2,
+        y2,
+        stroke: color,
+        "stroke-width": 2.5,
+        "stroke-dasharray": dash,
+        "marker-end": color === "#dc2626" || color === "#9333ea" ? "url(#arrowRed)" : "url(#arrowBlue)"
+      });
+    }
+
+    function calculateImage() {
+      const u = objectDistance;
+      const f = focalLength;
+      const invV = 1 / f - 1 / u;
+      const v = Math.abs(invV) < 0.000001 ? Infinity : 1 / invV;
+      const m = -v / u;
+      const imageHeight = m * objectHeight;
+      const isReal = v > 0 && Number.isFinite(v);
+      const isVirtual = v < 0 && Number.isFinite(v);
+      const atInfinity = !Number.isFinite(v);
+
+      return { u, f, v, m, imageHeight, isReal, isVirtual, atInfinity };
+    }
+
+    function updateLabels(data) {
+      document.getElementById("objectDistanceLabel").textContent = objectDistance.toFixed(1);
+      document.getElementById("objectHeightLabel").textContent = objectHeight.toFixed(1);
+      document.getElementById("focalLengthLabel").textContent = focalLength.toFixed(1);
+
+      objectDistanceRange.value = objectDistance;
+      objectHeightRange.value = objectHeight;
+      focalLengthRange.value = focalLength;
+      objectDistanceInput.value = objectDistance;
+      focalLengthInput.value = focalLength;
+
+      document.getElementById("imageDistanceText").textContent = data.atInfinity ? "∞" : data.v.toFixed(2) + " cm";
+      document.getElementById("magnificationText").textContent = data.atInfinity ? "∞" : data.m.toFixed(2);
+      document.getElementById("imageHeightText").textContent = data.atInfinity ? "∞" : data.imageHeight.toFixed(2) + " cm";
+
+      let observation = "";
+      if (data.atInfinity) {
+        observation = "Object is at F: the refracted rays are parallel, so the image is formed at infinity.";
+      } else if (data.isReal) {
+        observation = "The image is real, inverted, and formed on the opposite side of the lens.";
+      } else {
+        observation = "The image is virtual, upright, and formed on the same side as the object.";
+      }
+      document.getElementById("observationText").textContent = observation;
+    }
+
+    function drawGrid() {
+      for (let i = 0; i <= 20; i++) {
+        const x = cx + (i - 10) * scale * 2;
+        addLine(x, 30, x, height - 30, { stroke: "#e2e8f0", width: 1 });
+      }
+
+      for (let i = 0; i <= 12; i++) {
+        const y = cy + (i - 6) * scale * 2;
+        addLine(30, y, width - 30, y, { stroke: "#e2e8f0", width: 1 });
+      }
+    }
+
+    function drawMarkers() {
+      const defs = add("defs");
+
+      const arrowBlue = svgElement("marker", {
+        id: "arrowBlue",
+        markerWidth: 10,
+        markerHeight: 10,
+        refX: 8,
+        refY: 3,
+        orient: "auto",
+        markerUnits: "strokeWidth"
+      });
+      arrowBlue.appendChild(svgElement("path", { d: "M0,0 L0,6 L9,3 z", fill: "#2563eb" }));
+      defs.appendChild(arrowBlue);
+
+      const arrowRed = svgElement("marker", {
+        id: "arrowRed",
+        markerWidth: 10,
+        markerHeight: 10,
+        refX: 8,
+        refY: 3,
+        orient: "auto",
+        markerUnits: "strokeWidth"
+      });
+      arrowRed.appendChild(svgElement("path", { d: "M0,0 L0,6 L9,3 z", fill: "#dc2626" }));
+      defs.appendChild(arrowRed);
+    }
+
+    function drawDiagram() {
+      svg.innerHTML = "";
+      drawMarkers();
+
+      const data = calculateImage();
+      updateLabels(data);
+
+      const objectX = cx - objectDistance * scale;
+      const objectTopY = cy - objectHeight * scale;
+      const imageX = Number.isFinite(data.v) ? cx + data.v * scale : width - 70;
+      const imageTopY = Number.isFinite(data.imageHeight) ? cy - data.imageHeight * scale : cy;
+
+      const leftF = cx - focalLength * scale;
+      const rightF = cx + focalLength * scale;
+      const left2F = cx - 2 * focalLength * scale;
+      const right2F = cx + 2 * focalLength * scale;
+
+      drawGrid();
+
+      addLine(35, cy, width - 35, cy, { stroke: "#334155", width: 2 });
+      addText(width - 135, cy - 10, "Principal axis", { fill: "#64748b", size: 14 });
+
+      add("path", {
+        d: `M${cx},70 C${cx - 38},185 ${cx - 38},375 ${cx},490`,
+        fill: "none",
+        stroke: "#0f172a",
+        "stroke-width": 3
+      });
+      add("path", {
+        d: `M${cx},70 C${cx + 38},185 ${cx + 38},375 ${cx},490`,
+        fill: "none",
+        stroke: "#0f172a",
+        "stroke-width": 3
+      });
+      addLine(cx, 70, cx, 490, { stroke: "#0f172a", width: 2, dash: "8 8" });
+      addText(cx - 58, 50, "Converging Lens", { fill: "#0f172a", weight: "bold" });
+
+      const focalPoints = [
+        { x: leftF, label: "F" },
+        { x: rightF, label: "F" },
+        { x: left2F, label: "2F" },
+        { x: right2F, label: "2F" }
+      ];
+
+      focalPoints.forEach(point => {
+        addLine(point.x, cy - 12, point.x, cy + 12, { stroke: "#64748b", width: 2 });
+        addText(point.x - 8, cy + 34, point.label, { fill: "#64748b", weight: "bold" });
+      });
+
+      const objectArrow = add("line", {
+        x1: objectX,
+        y1: cy,
+        x2: objectX,
+        y2: objectTopY,
+        stroke: "#111827",
+        "stroke-width": 5,
+        "marker-end": "url(#arrowRed)",
+        style: "cursor: grab;"
+      });
+      objectArrow.addEventListener("pointerdown", startDrag);
+
+      const objectHandle = add("circle", {
+        cx: objectX,
+        cy: objectTopY,
+        r: 8,
+        fill: "#111827",
+        style: "cursor: grab;"
+      });
+      objectHandle.addEventListener("pointerdown", startDrag);
+
+      addText(objectX - 35, cy + 28, "Object", { fill: "#111827", weight: "bold" });
+
+      if (!data.atInfinity) {
+        addArrow(objectX, objectTopY, cx, objectTopY);
+
+        if (data.isReal) {
+          addArrow(cx, objectTopY, imageX, imageTopY);
+          addArrow(objectX, objectTopY, imageX, imageTopY);
+          addArrow(objectX, objectTopY, cx, imageTopY);
+          addArrow(cx, imageTopY, imageX, imageTopY);
+        } else {
+          const ray1EndY = cy + ((width - 55 - cx) * (cy - objectTopY)) / (rightF - cx);
+          const ray2EndY = cy + ((width - 55 - objectX) * (cy - objectTopY)) / (cx - objectX);
+
+          addArrow(cx, objectTopY, width - 55, ray1EndY);
+          addArrow(objectX, objectTopY, width - 55, ray2EndY);
+
+          addLine(cx, objectTopY, imageX, imageTopY, { stroke: "#9333ea", width: 2, dash: "7 6" });
+          addLine(cx, cy, imageX, imageTopY, { stroke: "#9333ea", width: 2, dash: "7 6" });
+        }      } else {
+        // Special case: object at F₁.
+        // The image is at infinity, so the refracted rays leave the lens parallel to each other.
+        // Ray 1: from object top parallel to the principal axis, then refracts through F₂.
+        addArrow(objectX, objectTopY, cx, objectTopY);
+
+        const farRightX = width - 70;
+        const raySlope = (cy - objectTopY) / (rightF - cx);
+        const ray1EndY = objectTopY + raySlope * (farRightX - cx);
+
+        addArrow(cx, objectTopY, farRightX, ray1EndY);
+
+        // Ray 2: from object top through the optical centre. After the lens, it is parallel to Ray 1.
+        addArrow(objectX, objectTopY, cx, cy);
+        const ray2EndY = cy + raySlope * (farRightX - cx);
+        addArrow(cx, cy, farRightX, ray2EndY);
+
+        addText(width - 360, objectTopY - 18, "Rays leave parallel: image at infinity", {
+          fill: "#1d4ed8",
+          weight: "bold"
+        });
+      }
+
+      if (!data.atInfinity && Math.abs(imageX - cx) < width / 2 - 35) {
+        const imageColor = data.isReal ? "#dc2626" : "#9333ea";
+        add("line", {
+          x1: imageX,
+          y1: cy,
+          x2: imageX,
+          y2: imageTopY,
+          stroke: imageColor,
+          "stroke-width": 5,
+          "stroke-dasharray": data.isVirtual ? "8 6" : "",
+          "marker-end": "url(#arrowRed)"
+        });
+        add("circle", {
+          cx: imageX,
+          cy: imageTopY,
+          r: 7,
+          fill: imageColor
+        });
+        addText(imageX - 28, data.imageHeight < 0 ? cy - 18 : cy + 32, "Image", {
+          fill: "#111827",
+          weight: "bold"
+        });
+      }
+
+      add("rect", {
+        x: 38,
+        y: 32,
+        width: 285,
+        height: 82,
+        rx: 18,
+        fill: "#f8fafc",
+        stroke: "#e2e8f0"
+      });
+      addText(58, 62, "Black arrow = object", { fill: "#334155" });
+      addText(58, 86, "Blue rays = real light paths", { fill: "#1d4ed8" });
+      addText(58, 110, "Purple dashed rays = virtual extensions", { fill: "#7e22ce" });
+    }
+
+    function startDrag(event) {
+      dragging = true;
+      svg.setPointerCapture(event.pointerId);
+    }
+
+    svg.addEventListener("pointermove", function(event) {
+      if (!dragging) return;
+      const rect = svg.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * width;
+      objectDistance = clamp((cx - x) / scale, 3, 25);
+      objectDistance = Number(objectDistance.toFixed(1));
+      drawDiagram();
+    });
+
+    svg.addEventListener("pointerup", function() {
+      dragging = false;
+    });
+
+    svg.addEventListener("pointerleave", function() {
+      dragging = false;
+    });
+
+    objectDistanceRange.addEventListener("input", function() {
+      objectDistance = Number(this.value);
+      drawDiagram();
+    });
+
+    objectHeightRange.addEventListener("input", function() {
+      objectHeight = Number(this.value);
+      drawDiagram();
+    });
+
+    focalLengthRange.addEventListener("input", function() {
+      focalLength = Number(this.value);
+      drawDiagram();
+    });
+
+    objectDistanceInput.addEventListener("input", function() {
+      objectDistance = clamp(Number(this.value), 3, 25);
+      drawDiagram();
+    });
+
+    focalLengthInput.addEventListener("input", function() {
+      focalLength = clamp(Number(this.value), 4, 12);
+      drawDiagram();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", function() {
+      objectDistance = 18;
+      objectHeight = 6;
+      focalLength = 8;
+      drawDiagram();
+    });
+
+    drawDiagram();
+  </script>
+</body>
+</html>
